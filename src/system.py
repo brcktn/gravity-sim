@@ -1,4 +1,4 @@
-import math
+import random
 
 class Object:
     def __init__(self, mass, x, y, x_prime=0, y_prime=0):
@@ -9,6 +9,7 @@ class Object:
         self.y_prime = y_prime
         self.y_force = 0
         self.x_force = 0
+        self.color = (random.random(), random.random(), random.random())
 
 class System:
     G = 1
@@ -16,6 +17,14 @@ class System:
     def __init__(self):
         self.objects: list[Object] = []
 
+    """
+    Add an object to the system.
+    mass: The mass of the object.
+    x: The x position of the object.
+    y: The y position of the object.
+    x_prime: The initial x velocity of the object.
+    y_prime: The initial y velocity of the object.
+    """
     def add_object(self, mass, x, y, x_prime=0, y_prime=0):
         object = Object(mass, x, y, x_prime, y_prime)
         self.objects.append(object)
