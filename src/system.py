@@ -1,6 +1,9 @@
-import random
+from random import randint, shuffle
+
 
 class Object:
+    color_gen = None
+
     def __init__(self, mass, x, y, x_prime=0, y_prime=0):
         self.mass = mass
         self.x = x
@@ -9,7 +12,37 @@ class Object:
         self.y_prime = y_prime
         self.y_force = 0
         self.x_force = 0
-        self.color = (random.random(), random.random(), random.random())
+        if Object.color_gen is None:
+            Object.color_gen = self.generate_color()
+        self.color = next(self.color_gen)
+
+    """
+    Get the distance between this object and another object.
+    object: The other object.
+    return: The distance between the two objects.
+    """
+
+    def get_distance(self, object) -> float:
+        x_distance = object.x - self.x
+        y_distance = object.y - self.y
+        return (x_distance**2 + y_distance**2) ** 0.5
+
+    def generate_color(self):
+        colors = [
+            (1, 1, 1),
+            (1, 0, 0),
+            (0, 1, 0),
+            (0, 0, 1),
+            (1, 1, 0),
+            (1, 0, 1),
+            (0, 1, 1),
+        ]
+        shuffle(colors)
+        counter = 0
+        while True:
+            yield colors[counter % len(colors)]
+            counter += 1
+
 
 class System:
     G = 1
@@ -25,6 +58,7 @@ class System:
     x_prime: The initial x velocity of the object.
     y_prime: The initial y velocity of the object.
     """
+
     def add_object(self, mass, x, y, x_prime=0, y_prime=0):
         object = Object(mass, x, y, x_prime, y_prime)
         self.objects.append(object)
@@ -40,7 +74,9 @@ class System:
             self.objects[i].y_force = 0
             for j in range(len(self.objects)):
                 if i != j:
-                    x_force, y_force = self.calculate_force(self.objects[i], self.objects[j])
+                    x_force, y_force = self.calculate_force(
+                        self.objects[i], self.objects[j]
+                    )
 
                     self.objects[i].x_force += x_force
                     self.objects[i].y_force += y_force
@@ -58,9 +94,9 @@ class System:
     def calculate_force(self, object1, object2):
         x_distance = object2.x - object1.x
         y_distance = object2.y - object1.y
-        distance = (x_distance ** 2 + y_distance ** 2) ** 0.5
+        distance = (x_distance**2 + y_distance**2) ** 0.5
 
-        force = self.G * object1.mass * object2.mass / distance ** 2
+        force = self.G * object1.mass * object2.mass / distance**2
         x_force = force * x_distance / distance
         y_force = force * y_distance / distance
 
