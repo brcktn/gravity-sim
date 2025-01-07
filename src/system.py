@@ -1,4 +1,10 @@
 from random import randint, shuffle
+import itertools
+
+DEFAULT_SETTINGS = {
+    "gravitational_constant": 100,
+    "collisions combine": True,
+}
 
 
 class Object:
@@ -6,6 +12,7 @@ class Object:
 
     def __init__(self, mass, x, y, x_prime=0, y_prime=0):
         self.mass = mass
+        self.radius = mass**0.5  # radius is proportional to the square root of mass
         self.x = x
         self.y = y
         self.x_prime = x_prime
@@ -45,10 +52,10 @@ class Object:
 
 
 class System:
-    G = 1
-
-    def __init__(self):
+    def __init__(self, settings=DEFAULT_SETTINGS):
         self.objects: list[Object] = []
+        self.G = settings["gravitational_constant"]
+        self.settings = settings
 
     """
     Add an object to the system.
@@ -67,6 +74,8 @@ class System:
         self.update_forces()
         self.update_velocities(delta_time)
         self.update_positions(delta_time)
+        if self.settings["collisions combine"]:
+            self.calculate_collisions()
 
     def update_forces(self):
         for i in range(len(self.objects)):
@@ -101,3 +110,19 @@ class System:
         y_force = force * y_distance / distance
 
         return x_force, y_force
+
+    def calculate_collisions(self):
+        for object1, object2 in itertools.combinations(self.objects, 2):
+            if object1.get_distance(object2) < object1.radius + object2.radius:
+                new_mass = object1.mass + object2.mass
+                new_x = (object1.x * object1.mass + object2.x * object2.mass) / new_mass
+                new_y = (object1.y * object1.mass + object2.y * object2.mass) / new_mass
+                new_x_prime = (
+                    object1.x_prime * object1.mass + object2.x_prime * object2.mass
+                ) / new_mass
+                new_y_prime = (
+                    object1.y_prime * object1.mass + object2.y_prime * object2.mass
+                ) / new_mass
+                self.objects.remove(object1)
+                self.objects.remove(object2)
+                self.add_object(new_mass, new_x, new_y, new_x_prime, new_y_prime)

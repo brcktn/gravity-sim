@@ -1,32 +1,33 @@
 from system import System
 import math
-import os
 
 import cairo
 import cv2
 import numpy as np
 
 FPS = 60
-VIDEO_LENGTH_SECONDS = 5
+VIDEO_LENGTH_SECONDS = 10
 VIDEO_WIDTH = 500
 VIDEO_HEIGHT = 500
 
 SIMULATION_CALC_PER_FRAME = 1000
 
-SIMULATION_WIDTH = 10
-SIMULATION_HEIGHT = 10
+SIMULATION_WIDTH = 120
+SIMULATION_HEIGHT = SIMULATION_WIDTH * VIDEO_HEIGHT / VIDEO_WIDTH
 
-PX_PER_MASS = 5
+PX_PER_UNIT_DIST = VIDEO_WIDTH / SIMULATION_WIDTH
+
+SETTINGS = {
+    "gravitational_constant": 1000,
+    "collisions combine": True,
+}
 
 
 def main():
-    system = System()
-    system.add_object(1, 1, 0, 0, 0)
-    system.add_object(1, 2, 0, 0, 0)
-    system.add_object(1, 3, 0, 0, 0)
-    system.add_object(1, -3, 0, 0, 0)
-    system.add_object(1, -2, 0, 0, 0)
-    system.add_object(1, -1, 0, 0, 0)
+    system = System(settings=SETTINGS)
+    system.add_object(30, 20, 0, -1, -20)
+    system.add_object(20, -20, 0, -1, 20)
+    system.add_object(10, 0, 20, 20, 0)
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     video = cv2.VideoWriter("output.mp4", fourcc, FPS, (VIDEO_WIDTH, VIDEO_HEIGHT))
@@ -51,7 +52,7 @@ def render_frame(system: System):
         context.set_source_rgb(*object.color)
         x = (object.x + SIMULATION_WIDTH / 2) / SIMULATION_WIDTH * VIDEO_WIDTH
         y = (object.y + SIMULATION_HEIGHT / 2) / SIMULATION_HEIGHT * VIDEO_HEIGHT
-        context.arc(x, y, object.mass * PX_PER_MASS, 0, 2 * math.pi)
+        context.arc(x, y, object.radius * PX_PER_UNIT_DIST, 0, 2 * math.pi)
         context.fill()
 
     buffer = surface.get_data()
